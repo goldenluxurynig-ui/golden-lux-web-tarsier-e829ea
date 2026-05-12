@@ -5,22 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Golden Luxury</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 body{
   background: linear-gradient(135deg,#ffe4ec,#fff0f5,#ffd6e8);
   font-family: sans-serif;
+  margin:0;
 }
+
+.header{
+  text-align:center;
+  padding:20px;
+}
+
+.header h1{
+  color:#e91e63;
+  font-size:30px;
+}
+
+#products{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  padding:10px;
+}
+
 .card{
   background:white;
   padding:15px;
   border-radius:12px;
-  margin:10px;
   box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
+
 button{
   margin-top:8px;
   background:#e91e63;
@@ -28,7 +45,24 @@ button{
   padding:8px;
   border:none;
   border-radius:6px;
+  cursor:pointer;
 }
+
+.cart{
+  background:white;
+  margin:10px;
+  padding:15px;
+  border-radius:10px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+
 .whatsapp{
   position:fixed;
   bottom:20px;
@@ -44,36 +78,28 @@ button{
 
 <body>
 
-<!-- HEADER -->
-<div style="text-align:center;padding:20px;">
-  <h1 style="font-size:30px;color:#e91e63;">Golden Luxury 💖</h1>
-  <p>Girly Accessories & Fashion Store</p>
+<div class="header">
+  <h1>Golden Luxury 💖</h1>
+  <p>Girly Accessories Store</p>
 </div>
 
-<!-- PRODUCTS -->
-<div id="products" style="display:grid;grid-template-columns:repeat(2,1fr);padding:10px;"></div>
+<div id="products"></div>
 
-<!-- CART -->
-<div style="padding:20px;background:white;margin:10px;border-radius:10px;">
+<div class="cart">
   <h2>Cart</h2>
   <ul id="cartList"></ul>
   <h3>Total: ₦<span id="total">0</span></h3>
+
+  <input type="email" id="email" placeholder="Enter your email">
+
   <button onclick="pay()">Pay Now</button>
 </div>
 
-<!-- WHATSAPP -->
 <a class="whatsapp" href="https://wa.me/2349019292124" target="_blank">
 💬 Chat
 </a>
 
 <script>
-/* ---------------- SUPABASE SETUP ---------------- */
-const SUPABASE_URL = "https://wtszjflholdviucdulin.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0c3pqZmxob2xkdml1Y2R1bGluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTIxMDQsImV4cCI6MjA5MzIyODEwNH0.viPHi5DaxwM-drn5WpN4AxXLv-gxZkge88kPFxcEtBg";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-/* ---------------- PRODUCTS ---------------- */
 const products = [
   {name:"Pimple Patch", price:1000},
   {name:"Phone Suction", price:1300},
@@ -89,28 +115,35 @@ const products = [
 
 let cart = [];
 
+/* ---------- LOAD PRODUCTS ---------- */
 function loadProducts(){
   let box = document.getElementById("products");
+  box.innerHTML = "";
+
   products.forEach(p=>{
     let div = document.createElement("div");
-    div.className="card";
+    div.className = "card";
+
     div.innerHTML = `
       <h3>${p.name}</h3>
       <p>₦${p.price}</p>
-      <button onclick="add('${p.name}',${p.price})">Add to Cart</button>
+      <button onclick="addToCart('${p.name}',${p.price})">Add to Cart</button>
     `;
+
     box.appendChild(div);
   });
 }
-loadProducts();
 
-function add(name,price){
+/* ---------- CART ---------- */
+function addToCart(name, price){
   let item = cart.find(i => i.name === name);
+
   if(item){
-    item.qty += 1;
+    item.qty++;
   } else {
     cart.push({name, price, qty:1});
   }
+
   updateCart();
 }
 
@@ -120,24 +153,25 @@ function removeItem(name){
 }
 
 function updateCart(){
-  let list=document.getElementById("cartList");
-  let total=0;
-  list.innerHTML="";
+  let list = document.getElementById("cartList");
+  let total = 0;
+  list.innerHTML = "";
 
   cart.forEach(i=>{
-    let li=document.createElement("li");
+    let li = document.createElement("li");
     li.innerHTML = `
       ${i.name} x${i.qty} - ₦${i.price * i.qty}
       <button onclick="removeItem('${i.name}')">❌</button>
     `;
     list.appendChild(li);
+
     total += i.price * i.qty;
   });
 
   document.getElementById("total").innerText = total;
 }
 
-/* ---------------- PAYMENT ---------------- */
+/* ---------- PAYMENT ---------- */
 function pay(){
 
   let total = cart.reduce((a,b)=>a + (b.price * b.qty), 0);
@@ -155,48 +189,29 @@ function pay(){
   }
 
   let handler = PaystackPop.setup({
-
     key: "pk_test_a23deac67faa41f40a243f9923d26928fa9e0fe2",
-
     email: email,
-
     amount: total * 100,
-
     currency: "NGN",
 
-    callback: async function(response){
+    callback: function(response){
 
-      const { error } = await supabaseClient
-      .from("orders")
-      .insert([
-        {
-          email: email,
-          items: cart,
-          total: total,
-          payment_ref: response.reference
-        }
-      ]);
-
-      if(error){
-        alert("Payment successful but order not saved");
-        console.log(error);
-      } else {
-        alert("Payment Successful 💖");
-      }
+      alert("Payment Successful 💖\nRef: " + response.reference);
 
       cart = [];
       updateCart();
     },
 
     onClose: function(){
-      alert("Payment window closed");
+      alert("Payment cancelled");
     }
-
   });
 
   handler.openIframe();
 }
-}
+
+/* ---------- INIT ---------- */
+window.onload = loadProducts;
 </script>
 
 </body>
