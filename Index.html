@@ -7,7 +7,6 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 body{
@@ -51,14 +50,19 @@ button{
 </div>
 
 <!-- PRODUCTS -->
-<div id="products" style="display:grid;grid-template-columns:repeat(2,1fr);padding:10px;">
-</div>
+<div id="products" style="display:grid;grid-template-columns:repeat(2,1fr);padding:10px;"></div>
 
 <!-- CART -->
 <div style="padding:20px;background:white;margin:10px;border-radius:10px;">
   <h2>Cart</h2>
+
   <ul id="cartList"></ul>
+
   <h3>Total: ₦<span id="total">0</span></h3>
+
+  <input type="email" id="email" placeholder="Enter your email"
+  style="width:100%;padding:10px;margin-top:10px;border:1px solid #ccc;border-radius:6px;">
+
   <button onclick="pay()">Pay Now</button>
 </div>
 
@@ -68,12 +72,6 @@ button{
 </a>
 
 <script>
-/* ---------------- SUPABASE SETUP ---------------- */
-const SUPABASE_URL = "https://wtszjflholdviucdulin.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0c3pqZmxob2xkdml1Y2R1bGluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTIxMDQsImV4cCI6MjA5MzIyODEwNH0.viPHi5DaxwM-drn5WpN4AxXLv-gxZkge88kPFxcEtBg";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 /* ---------------- PRODUCTS ---------------- */
 const products = [
   {name:"Pimple Patch", price:1000},
@@ -91,8 +89,6 @@ const products = [
 let cart = [];
 
 function loadProducts(){
-  console.log("loadProducts is running");
-  console.log(document.getElementById("products"));
   let box = document.getElementById("products");
   products.forEach(p=>{
     let div = document.createElement("div");
@@ -140,7 +136,7 @@ function updateCart(){
   document.getElementById("total").innerText = total;
 }
 
-/* ---------------- PAYMENT ---------------- */
+/* ---------------- PAYMENT (NO SUPABASE) ---------------- */
 function pay(){
 
   let total = cart.reduce((a,b)=>a + (b.price * b.qty), 0);
@@ -160,32 +156,25 @@ function pay(){
   let handler = PaystackPop.setup({
 
     key: "pk_test_a23deac67faa41f40a243f9923d26928fa9e0fe2",
-
     email: email,
-
     amount: total * 100,
-
     currency: "NGN",
 
-    callback: async function(response){
+    callback: function(response){
 
-      const { error } = await supabaseClient
-      .from("orders")
-      .insert([
-        {
-          email: email,
-          items: cart,
-          total: total,
-          payment_ref: response.reference
-        }
-      ]);
+      // ✅ TEMPORARY: just show order instead of saving to Supabase
+      alert(
+        "Payment Successful 💖\n\n" +
+        "Reference: " + response.reference + "\n" +
+        "Total: ₦" + total
+      );
 
-      if(error){
-        alert("Payment successful but order not saved");
-        console.log(error);
-      } else {
-        alert("Payment Successful 💖");
-      }
+      console.log("Order (not saved):", {
+        email,
+        cart,
+        total,
+        reference: response.reference
+      });
 
       cart = [];
       updateCart();
@@ -198,7 +187,6 @@ function pay(){
   });
 
   handler.openIframe();
-}
 }
 </script>
 
