@@ -78,7 +78,13 @@ const products = [
   {name:"Pimple Patch", price:1000},
   {name:"Phone Suction", price:1300},
   {name:"Mini Fan", price:3800},
-  {name:"Tote Bag", price:2000}
+  {name:"Tote Bag", price:2000},
+  {name:"Lip Gloss", price:1500},
+  {name:"Necklace", price:2500},
+  {name:"Bracelet", price:1800},
+  {name:"Hair Clips", price:1200},
+  {name:"Perfume", price:5000},
+  {name:"Handbag", price:7000}
 ];
 
 let cart = [];
@@ -133,6 +139,7 @@ function updateCart(){
 
 /* ---------------- PAYMENT ---------------- */
 function pay(){
+
   let total = cart.reduce((a,b)=>a + (b.price * b.qty), 0);
 
   if(total === 0){
@@ -140,17 +147,28 @@ function pay(){
     return;
   }
 
-  let email = prompt("Enter your email");
+  let email = document.getElementById("email").value;
+
+  if(!email){
+    alert("Please enter your email");
+    return;
+  }
 
   let handler = PaystackPop.setup({
-    key: "pk_test_a23deac67faa41f40a243f9923d26928fa9e0fe2",
+
+    key: "PASTE_YOUR_REAL_PAYSTACK_PUBLIC_KEY",
+
     email: email,
+
     amount: total * 100,
+
     currency: "NGN",
+
     callback: async function(response){
 
-      // Save order to Supabase (optional but ready)
-      const { error } = await supabaseClient.from("orders").insert([
+      const { error } = await supabaseClient
+      .from("orders")
+      .insert([
         {
           email: email,
           items: cart,
@@ -160,18 +178,24 @@ function pay(){
       ]);
 
       if(error){
-        alert("Payment successful but not saved");
+        alert("Payment successful but order not saved");
         console.log(error);
       } else {
-        alert("Payment Successful 💖 Order saved!");
+        alert("Payment Successful 💖");
       }
 
       cart = [];
       updateCart();
+    },
+
+    onClose: function(){
+      alert("Payment window closed");
     }
+
   });
 
   handler.openIframe();
+}
 }
 </script>
 
