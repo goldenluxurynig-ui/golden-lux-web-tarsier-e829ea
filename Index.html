@@ -74,16 +74,51 @@ button{
 <script>
 /* ---------------- PRODUCTS ---------------- */
 const products = [
-  {name:"Pimple Patch", price:1000},
-  {name:"Phone Suction", price:1300},
-  {name:"Mini Fan", price:3800},
-  {name:"Tote Bag", price:2000},
-  {name:"Led light ", price:6000},
-  {name:"gorgous cup", price:2,500},
-  {name:"digital handfan", price:5,800},
-  {name: "Floral Clips", price:1200},
-  {name:"fur totebag", price:6,500},
-  {name:"Selfie stick", price:6000}
+  {
+    name: "Pimple Patch",
+    price: 1000,
+    image: "images/pimple-patch.jpg"
+  },
+  {
+    name: "Phone Suction",
+    price: 1300,
+    image: "images/phone-suction.jpg"
+  },
+  {
+    name: "Mini Hand Fan",
+    price: 3800,
+    image: "images/mini-hand-fan.jpg"
+  },
+  {
+    name: "Floral Clips",
+    price: 1200,
+    image: "images/_floral-clips.jpg"
+  },
+  {
+    name: "Fur Tote Bag",
+    price: 6500,
+    image: "images/fur-tote-bag.jpg"
+  },
+  {
+    name: "Digital Hand Fan",
+    price: 5800,
+    image: "images/digital-hand-fan.jpg"
+  },
+  {
+    name: "Selfie Stick",
+    price: 6000,
+    image: "images/selfie-stick.jpg"
+  },
+  {
+    name: "LED Light",
+    price: 6000,
+    image: "images/led-light.jpg"
+  },
+  {
+    name: "Gorgous Cup",
+    price: 2500,
+    image: "images/gorgous-cup.jpg"
+  }
 ];
 
 let cart = [];
@@ -94,10 +129,11 @@ function loadProducts(){
     let div = document.createElement("div");
     div.className="card";
     div.innerHTML = `
-      <h3>${p.name}</h3>
-      <p>₦${p.price}</p>
-      <button onclick="add('${p.name}',${p.price})">Add to Cart</button>
-    `;
+  <img src="${p.image}" alt="${p.name}" style="width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px;">
+  <h3>${p.name}</h3>
+  <p>₦${p.price}</p>
+  <button onclick="add('${p.name}',${p.price})">Add to Cart</button>
+`;
     box.appendChild(div);
   });
 }
